@@ -245,16 +245,12 @@ const SalesList: React.FC = () => {
               </div>
               <div className="space-x-2">
                 <Button
-                  variant="outline"
-                  size="sm"
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
                 >
                   Previous
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
                 >
