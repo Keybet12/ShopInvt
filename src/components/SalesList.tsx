@@ -191,7 +191,6 @@ const SalesList: React.FC = () => {
             <Plus className="mr-2 h-4 w-4" /> Record Sale
           </Button>
         </CardHeader>
-
         <CardContent>
           <Table>
             <TableHeader>
@@ -237,8 +236,35 @@ const SalesList: React.FC = () => {
               ))}
             </TableBody>
           </Table>
-          {/* pagination and total profit (unchanged) */}
+
+          {/* Pagination controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-between items-center mt-4">
+              <div className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </div>
+              <div className="space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
+
 
         <CardFooter className="flex justify-end border-t px-6 py-3 space-x-6">
           <div className="text-sm font-medium">
