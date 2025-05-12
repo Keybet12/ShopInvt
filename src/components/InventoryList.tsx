@@ -15,6 +15,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardFooter,               // ← imported for footer
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -94,6 +95,13 @@ const InventoryList: React.FC = () => {
   const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
+  );
+
+  // --- new totals calculations ---
+  const totalStock = filteredProducts.reduce((sum, p) => sum + p.stockQuantity, 0);
+  const totalInventoryValue = filteredProducts.reduce(
+    (sum, p) => sum + p.cost * p.stockQuantity,
+    0
   );
 
   const handlePrevPage = () => {
@@ -229,6 +237,16 @@ const InventoryList: React.FC = () => {
             </div>
           </div>
         </CardContent>
+
+        {/* ← new footer with totals */}
+        <CardFooter className="flex justify-end border-t px-6 py-3 space-x-6">
+          <div className="text-sm font-medium">
+            Total Stock: <span className="text-green-600">{totalStock}</span>
+          </div>
+          <div className="text-sm font-medium">
+            Inventory Value: <span className="text-green-600">{formatKSH(totalInventoryValue)}</span>
+          </div>
+        </CardFooter>
       </Card>
 
       <Dialog open={showAddProduct} onOpenChange={setShowAddProduct}>
