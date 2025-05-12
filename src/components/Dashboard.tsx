@@ -100,7 +100,7 @@ export default function Dashboard() {
   }, []);
 
   const totalStock = products.reduce((sum, p) => sum + p.stockQuantity, 0);
-  const totalValue = products.reduce((sum, p) => sum + p.price * p.stockQuantity, 0);
+  const totalValue = products.reduce((sum, p) => sum + p.cost * p.stockQuantity, 0);
   const currentYear = new Date().getFullYear();
 
   const currentYearSales = useMemo(
