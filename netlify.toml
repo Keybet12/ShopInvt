@@ -1,0 +1,13 @@
+# netlify.toml
+
+[build]
+  # Netlify will use pnpm to build
+  command = "pnpm build"
+  # Publish the Vite output folder
+  publish = "dist"
+
+[build.environment]
+  # Tell Netlify to use pnpm instead of npm
+  NETLIFY_USE_PNPM = "true"
+  # (Optional) match your Node version locally
+  NODE_VERSION = "18"
