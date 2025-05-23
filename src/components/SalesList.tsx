@@ -116,14 +116,45 @@ const SalesList: React.FC = () => {
     setCurrentPage(1);
   };
   const handleDelete = async (sale: Sale) => {
-    const { error } = await supabase.from("sales").delete().eq("id", sale.id);
-    if (error) toast.error("Failed to delete sale.");
-    else {
-      toast.success("Sale deleted");
+  // Step 1: Fetch the product
+  const { data: product, error: fetchError } = await supabase
+    .from("inventory")
+    .select("stock_quantity")
+    .eq("id", sale.productId)
+    .maybeSingle();
+
+
+  if (fetchError || !product) {
+    toast.error("Failed to fetch product for restocking.");
+    return;
+  }
+
+  const updatedQuantity = product.stock_quantity + sale.quantity;
+
+  // Step 2: Update product quantity
+  const { error: updateError } = await supabase
+    .from("inventory")
+    .update({ stock_quantity: updatedQuantity })
+    .eq("id", sale.productId);
+
+  if (updateError) {
+    toast.error("Failed to restock product.");
+    return;
+  }
+
+    //Delete the sale
+    const { error: deleteError } = await supabase.from("sales").delete().eq("id", sale.id);
+
+    if (deleteError) {
+      toast.error("Failed to delete sale.");
+    } else {
+      toast.success("Sale deleted and stock restored.");
       fetchSales();
     }
+
     setSaleToDelete(null);
   };
+
 
   return (
     <>
