@@ -114,7 +114,30 @@ const AddSaleForm: React.FC<AddSaleFormProps> = ({ existingSale, onClose, onAddS
     const profit = total - selectedProduct.cost * data.quantity;
 
     if (existingSale) {
-      // Update
+      const originalQuantity = existingSale.quantity;
+      const quantityDelta = data.quantity - originalQuantity;
+
+      // Get latest product info
+      const { data: productData, error: prodError } = await supabase
+        .from("inventory")
+        .select("stock_quantity")
+        .eq("id", data.productId)
+        .single();
+
+      if (prodError || !productData) {
+        toast.error("Failed to fetch current inventory.");
+        return;
+      }
+
+      const currentStock = productData.stock_quantity;
+      const newStock = currentStock - quantityDelta;
+
+      if (newStock < 0) {
+        toast.error("Not enough stock to update the sale.");
+        return;
+      }
+
+      // Proceed to update sale
       const { data: updated, error } = await supabase
         .from("sales")
         .update({
@@ -128,10 +151,25 @@ const AddSaleForm: React.FC<AddSaleFormProps> = ({ existingSale, onClose, onAddS
         .eq("id", existingSale.id)
         .select()
         .single();
+
       if (error || !updated) {
         toast.error(error?.message || "Failed to update sale.");
         return;
       }
+
+      // Update inventory stock
+      const { error: stockError } = await supabase
+        .from("inventory")
+        .update({ stock_quantity: newStock })
+        .eq("id", selectedProduct.id);
+
+      if (stockError) {
+        toast.warning("Sale updated but failed to update stock.");
+        console.error(stockError.message);
+      } else {
+        toast.success("Inventory adjusted.");
+      }
+
       toast.success("Sale updated!");
       onAddSale({
         id: updated.id,
@@ -142,7 +180,8 @@ const AddSaleForm: React.FC<AddSaleFormProps> = ({ existingSale, onClose, onAddS
         profit: updated.profit,
         date: updated.date,
       });
-    } else {
+    }
+else {
       // Insert
       const { data: inserted, error } = await supabase
         .from("sales")
@@ -162,6 +201,25 @@ const AddSaleForm: React.FC<AddSaleFormProps> = ({ existingSale, onClose, onAddS
         toast.error(error?.message || "Failed to record sale.");
         return;
       }
+
+      if (data.quantity > selectedProduct.stockQuantity) {
+        toast.error("Not enough stock for this sale.");
+        return;
+      }
+       // Deduct stock
+      const updatedStock = selectedProduct.stockQuantity - data.quantity;
+      const { error: inventoryError } = await supabase
+        .from("inventory")
+        .update({ stock_quantity: updatedStock })
+        .eq("id", selectedProduct.id);
+
+      if (inventoryError) {
+        toast.warning("Sale was recorded, but inventory was not updated.");
+        console.error(inventoryError.message);
+      } else {
+        toast.success("Inventory updated.");
+      }
+
       toast.success("Sale recorded!");
       onAddSale({
         id: inserted.id,
